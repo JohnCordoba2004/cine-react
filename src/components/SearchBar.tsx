@@ -7,11 +7,12 @@ function SearchBar({
 }) {
   return (
     <input
-      className="w-full max-w-md p-3
-        mb-6 rounded-lg bg-slate-800 border border-slate-600 focus:outline-none"
+      className="w-full max-w-md p-4
+        mb-6 rounded-lg bg-slate-800 border border-slate-600 focus:outline-none placeholder:text-gray-400 text-emerald-400 capitalize"
       type="text"
       value={search}
       onChange={(e) => setSearch(e.target.value)}
+      placeholder="Escribe la película o serie"
     />
   );
 }

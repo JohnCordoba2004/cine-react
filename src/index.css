@@ -6,3 +6,17 @@ body {
     padding: 0;
     box-sizing: border-box;
 }
+
+/* Ocultar barra de scroll para Chrome, Safari y Opera */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ocultar barra de scroll para IE, Edge y Firefox */
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+

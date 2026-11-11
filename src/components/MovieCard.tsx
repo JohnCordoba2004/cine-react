@@ -12,7 +12,7 @@ function MovieCard({ pelicula, onSelect }: Props) {
   return (
     <div
       onClick={() => onSelect(pelicula)}
-      className="cursor-pointer bg-slate-800 rounded-xl overflow-hidden shadow-lg group"
+      className="cursor-pointer bg-slate-800 rounded-xl overflow-hidden shadow-lg group hover:scale-105 hover:z-10 hover:outline-2 hover:outline-white transition-transform duration-300 ease-in-out"
     >
       {/* Image */}
       <img
