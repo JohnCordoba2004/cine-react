@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-
+@plugin 'lightswind/plugin';
 body {
     background-color: #0f172a;
     margin: 0;
