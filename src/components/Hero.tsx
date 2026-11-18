@@ -50,70 +50,84 @@ export function Hero({ peliculas, onSelect }: Props) {
     }
 
     return (
-        <div className="mx-auto mb-8 mt-6 max-w-7xl px-4">
-            <div className="group relative h-[60vh] w-full overflow-hidden rounded-4xl shadow-2xl md:h-[70vh]">
-                {peliculas.map((peli, index) => (
-                    <img
-                        key={peli.id}
-                        src={
-                            peli.backdrop_path
-                                ? `https://image.tmdb.org/t/p/original${peli.backdrop_path}`
-                                : "https://dummyimage.com/600x400/000/5d67f0"
-                        }
-                        alt={peli.original_title}
-                        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "z-0 opacity-100" : "opacity-0"
-                            }`}
-                    />
-                ))}
+        <section className="relative mb-10 h-130 w-full overflow-hidden bg-slate-900 md:h-155">
+            {peliculas.map((peli, index) => (
+                <img
+                    key={peli.id}
+                    src={
+                        peli.backdrop_path
+                            ? `https://image.tmdb.org/t/p/original${peli.backdrop_path}`
+                            : "https://dummyimage.com/600x400/000/5d67f0"
+                    }
+                    alt={peli.original_title}
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "z-0 opacity-100" : "opacity-0"
+                        }`}
+                />
+            ))}
 
-                {/* Degradado */}
-                <div className="absolute inset-0 z-10 bg-linear-to-r from-slate-900/95 via-slate-900/40 to-transparent" />
+            {/* Estas capas oscuras mantienen el texto legible sobre cualquier imagen. */}
+            <div className="absolute inset-0 z-10 bg-linear-to-r from-slate-950 via-slate-950/70 to-transparent" />
+            <div className="absolute inset-0 z-10 bg-linear-to-t from-slate-950 via-transparent to-slate-950/30" />
 
-                {/* Btn izq */}
-                <button onClick={() => cambiarSlide('prev')} className="absolute left-4 top-1/2 z-30 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white opacity-0 transition-all hover:bg-black/70 group-hover:opacity-100">
-                    <span className="text-4xl"><ChevronLeft size={20} strokeWidth={1} /></span>
-                </button>
+            <button
+                type="button"
+                aria-label="Película anterior"
+                onClick={() => cambiarSlide('prev')}
+                className="absolute left-4 top-1/2 z-30 -translate-y-1/2 rounded-full bg-slate-950/70 p-3 text-white transition-colors hover:bg-blue-600"
+            >
+                <ChevronLeft size={24} />
+            </button>
 
-                {/* Btn der */}
-                <button onClick={() => cambiarSlide('next')} className="absolute right-4 top-1/2 z-30 -translate-y-1/2 rounded-full bg-black/30 p-2 text-white opacity-0 transition-all hover:bg-black/70 group-hover:opacity-100">
-                    <span className="text-4xl"><ChevronRight size={20} strokeWidth={1} /></span>
-                </button>
+            <button
+                type="button"
+                aria-label="Siguiente película"
+                onClick={() => cambiarSlide('next')}
+                className="absolute right-4 top-1/2 z-30 -translate-y-1/2 rounded-full bg-slate-950/70 p-3 text-white transition-colors hover:bg-blue-600"
+            >
+                <ChevronRight size={24} />
+            </button>
 
-                <div className="absolute left-8 top-12 z-20 flex max-w-xl flex-col gap-4 md:left-16 md:top-20">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
-                        <span>12+</span>
+            <div className="absolute inset-x-0 bottom-0 z-20">
+                <div className="mx-auto flex max-w-7xl flex-col items-start gap-4 px-12 pb-12 md:px-20 md:pb-16">
+                    <p className="font-semibold uppercase tracking-widest text-blue-300">
+                        Cine React recomienda
+                    </p>
+
+                    <div className="flex items-center gap-3 text-sm font-semibold text-slate-200">
+                        <span>{peliculaActual.release_date?.split("-")[0] ?? "Película"}</span>
                         <span>•</span>
-                        <span>{peliculaActual.release_date?.split("-")[0] ?? ""}</span>
-                        <span>•</span>
-                        <span>Película</span>
+                        <span>★ {peliculaActual.vote_average.toFixed(1)}</span>
                     </div>
 
-                    <h2 className="text-4xl font-bold leading-tight text-white drop-shadow-lg md:text-6xl">
+                    <h2 className="max-w-2xl text-4xl font-bold leading-tight text-white md:text-6xl">
                         {peliculaActual.title}
                     </h2>
 
-                    <p className="line-clamp-3 text-sm font-medium text-gray-300 drop-shadow-md md:text-base">
+                    <p className="line-clamp-3 max-w-xl text-sm leading-6 text-slate-200 md:text-base">
                         {peliculaActual.overview}
                     </p>
 
-                    <div className="mt-4 flex gap-4">
-                        <button
-                            type="button"
-                            className="flex items-center gap-2 rounded-lg bg-white px-6 py-2.5 font-bold text-black transition-colors hover:bg-gray-200"
-                        >
-                            ▶ Reproducir
-                        </button>
+                    <button
+                        type="button"
+                        onClick={() => onSelect(peliculaActual)}
+                        className="mt-2 rounded-md bg-blue-500 px-6 py-3 font-bold text-white transition-colors hover:bg-blue-400"
+                    >
+                        Ver detalles
+                    </button>
 
-                        <button
-                            type="button"
-                            onClick={() => onSelect(peliculaActual)}
-                            className="rounded-lg border border-white/20 bg-black/40 px-6 py-2.5 font-bold text-white backdrop-blur-md transition-colors hover:bg-black/60"
-                        >
-                            + Más información
-                        </button>
+                    <div className="mt-2 flex gap-2" aria-label="Elegir película destacada">
+                        {peliculas.map((peli, index) => (
+                            <button
+                                key={peli.id}
+                                type="button"
+                                aria-label={`Mostrar ${peli.title}`}
+                                onClick={() => setSlide({ listaIds, index })}
+                                className={`h-1 rounded-full transition-all ${index === currentIndex ? "w-10 bg-blue-400" : "w-5 bg-white/50 hover:bg-white"}`}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }

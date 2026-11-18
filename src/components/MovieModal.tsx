@@ -1,5 +1,7 @@
+import { CirclePlus, CircleX, Clapperboard } from "lucide-react";
 import type { Peli, PeliDetalle } from "../types";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   pelicula: Peli;
@@ -19,6 +21,7 @@ function MovieModal({ pelicula, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   /* Estado trailer */
   const [showTrailer, setShowTrailer] = useState(false);
+  const tipo = pelicula.media_type || 'movie'
 
   // Primero busca un Trailer, luego un Teaser, luego cualquier video de YouTube
   const trailerVideo =
@@ -32,11 +35,14 @@ function MovieModal({ pelicula, onClose }: Props) {
 
   const trailerKey = trailerVideo?.key || details?.videos.results[0]?.key;
 
+  const navigate = useNavigate()
+
+
   useEffect(() => {
     //Definimos la funcion asincrona
     const fetchMovieDetails = async () => {
-      const urlEsp = `https://api.themoviedb.org/3/movie/${pelicula.id}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=es-MX&append_to_response=videos`;
-      const urlEng = `https://api.themoviedb.org/3/movie/${pelicula.id}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&append_to_response=videos`;
+      const urlEsp = `https://api.themoviedb.org/3/${tipo}/${pelicula.id}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=es-MX&append_to_response=videos`;
+      const urlEng = `https://api.themoviedb.org/3/${tipo}/${pelicula.id}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&append_to_response=videos`;
 
       try {
         const response = await fetch(urlEsp);
@@ -60,7 +66,7 @@ function MovieModal({ pelicula, onClose }: Props) {
       }
     };
     fetchMovieDetails();
-  }, [pelicula.id]);
+  }, [pelicula, tipo]);
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 ">
@@ -75,19 +81,19 @@ function MovieModal({ pelicula, onClose }: Props) {
         {/* Botón de Cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-white bg-red-500 rounded-full w-8 h-8 flex items-center justify-center font-bold"
+          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center font-bold"
         >
-          X
+          <CircleX size={36} className="text-blue-500" />
         </button>
 
         <div className="w-full md:w-[60%] p-8 flex flex-col justify-center gap-4">
           {/* Contenido */}
           <h2 className="text-3xl font-bold text-white uppercase mb-4">
-            {pelicula.title}
+            {pelicula.title || pelicula.name}
           </h2>
 
           <div className="flex gap-4 text-sm text-gray-400">
-            <span>{pelicula.release_date.split("-")[0]}</span>
+            <span>{(pelicula.release_date || pelicula.first_air_date)?.split("-")[0]}</span>
             {/* Duration */}
             <span>
               {loading
@@ -113,15 +119,23 @@ function MovieModal({ pelicula, onClose }: Props) {
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {trailerKey && !showTrailer && (
-            <button
-              onClick={() => setShowTrailer(true)}
-              type="button"
-              className="border border-yellow-500 text-yellow-500 px-6 py-2 rounded-md w-max hover:bg-yellow-50 hover:text-black transition-colors"
-            >
-              Watch Trailer
+          <div className=" flex flex-col gap-5 mt-4 sm:flex-row">
+            {trailerKey && !showTrailer && (
+              <button
+                onClick={() => setShowTrailer(true)}
+                type="button"
+                className="border flex items-center gap-2.5 border-yellow-500 text-yellow-500 px-6 py-2 font-semibold rounded-md w-max hover:bg-yellow-50 hover:text-black transition-colors"
+              >
+                <Clapperboard size={26} />
+                Watch Trailer
+              </button>
+            )}
+
+            <button onClick={() => navigate(`/${tipo}/${pelicula.id}`)} type="button" className="border flex items-center gap-2.5 border-blue-500 text-blue-500 px-6 py-2 font-semibold rounded-md w-max hover:bg-blue-50 hover:text-black transition-colors">
+              <CirclePlus size={26} />
+              Más información
             </button>
-          )}
+          </div>
 
           {showTrailer && trailerKey && (
             <div
@@ -130,10 +144,10 @@ function MovieModal({ pelicula, onClose }: Props) {
             >
               {/* Btn para cerrar */}
               <button
-                className="absolute top-6 right-6 text-white bg-red-600 hover:bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold transition-colors z-10 shadow-lg"
+                className="absolute top-6 right-6 flex items-center justify-center font-bold transition-colors z-10 shadow-lg"
                 onClick={() => setShowTrailer(false)}
               >
-                X
+                <CircleX size={26} className="text-blue-500" />
               </button>
               {/* Video */}
               <div

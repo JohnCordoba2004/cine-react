@@ -1,19 +1,22 @@
 
 export interface Peli {
-    adult: boolean;
-    backdrop_path: string | null;
-    genre_ids: Array<number>;
     id: number;
-    original_language: string;
-    original_title: string;
+    title?: string;
+    name?: string;
+    original_title?: string;
     overview: string;
-    popularity: number;
-    poster_path: number | null;
-    release_date: string;
-    softscore: boolean;
-    title: string;
-    video: boolean;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
     vote_average: number;
+    adult: boolean;
+    genre_ids: number[];
+    media_type?: 'movie' | 'tv' | 'person'
+    original_language: string;
+    popularity: number;
+    softscore: boolean;
+    video: boolean;
     vote_count: number;
 }
 
@@ -27,5 +30,20 @@ export interface PeliDetalle extends Peli {
             type: string
         }[];
     };
+    credits: {
+        cast: {
+            id: number
+            name: string
+            profile_path: string | null
+            character: string
+        }[]
+    }
+}
+
+export interface TMDBResponse {
+    page: number
+    results: Peli[]
+    total_pages: number
+    total_results: number
 }
 

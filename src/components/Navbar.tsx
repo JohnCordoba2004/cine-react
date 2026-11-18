@@ -9,28 +9,28 @@ interface Props {
 
 export function Header({ search, setSearch, verFavoritos, setVerFavoritos }: Props) {
     return (
-        <header className="w-full py-1 bg-[#0a0a0a] border-b border-gray-800/50">
+        <header className="sticky top-0 z-50 w-full border-b border-blue-900/40 bg-slate-950/95 py-2 backdrop-blur">
 
-            <div className="max-w-7xl mx-auto flex items-center justify-between px-2 py-0.5">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2">
                 {/* Lado Izquierdo: Logo y Links */}
-                <div className="flex items-center justify-center gap-8">
+                <div className="flex items-center gap-8">
                     {/* Logo */}
-                    <h1 className="text-3xl font-black text-red-600 tracking-tighter cursor-pointer">
-                        <span className="text-white">Cine React</span>
+                    <h1 className="cursor-pointer text-2xl font-black tracking-wide text-white md:text-3xl">
+                        Cine <span className="text-blue-400">React</span>
                     </h1>
 
                     {/* Links (Ocultos en navegación) */}
-                    <nav className="hidden md:flex items-center justify-center gap-6">
-                        <button onClick={() => setVerFavoritos(false)} className={`font-medium transition-colors ${!verFavoritos ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                    <nav className="hidden items-center gap-6 md:flex">
+                        <button type="button" onClick={() => setVerFavoritos(false)} className={`border-b-2 py-2 font-medium transition-colors ${!verFavoritos ? 'border-blue-400 text-white' : 'border-transparent text-slate-400 hover:text-white'}`}>
                             Inicio
                         </button>
 
-                        <button className="text-gray-400 hover:text-white font-medium transition-colors">Película</button>
-                        <button className="text-gray-400 hover:text-white font-medium transition-colors">Series</button>
+                        <button type="button" className="font-medium text-slate-400 transition-colors hover:text-white">Películas</button>
+                        <button type="button" className="font-medium text-slate-400 transition-colors hover:text-white">Series</button>
 
                         {/* Mi lista */}
 
-                        <button onClick={() => setVerFavoritos(true)} className={`font-medium transition-colors ${verFavoritos ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+                        <button type="button" onClick={() => setVerFavoritos(true)} className={`border-b-2 py-2 font-medium transition-colors ${verFavoritos ? 'border-blue-400 text-white' : 'border-transparent text-slate-400 hover:text-white'}`}>
                             Mi lista
                         </button>
                     </nav>

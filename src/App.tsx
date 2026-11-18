@@ -1,9 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import MovieCard from "./components/MovieCard";
 import MovieModal from "./components/MovieModal";
-import type { Peli } from "./types";
 import { Header } from "./components/Navbar";
 import { Hero } from "./components/Hero";
+import type { Peli, TMDBResponse } from './types'
+import { Routes, Route } from "react-router-dom";
+import { MoviePage } from "./pages/MoviePage";
+
 
 function App() {
   // ==========================================
@@ -15,7 +18,7 @@ function App() {
   const [page, setPage] = useState(1);                // Página actual de la API
   const [totalPages, setTotalPages] = useState(1);    // Total de páginas de la API
   const [verFavoritos, setVerFavoritos] = useState(false); // Vista actual (Inicio o Mi Lista)
-
+  const [topRated, setTopRated] = useState<Peli[]>([]) // Top Rated o Mejor Valoradas
   // Referencia para controlar el scroll del carrusel
   const carruselRef = useRef<HTMLDivElement>(null);
 
@@ -49,20 +52,26 @@ function App() {
       try {
         if (search.length >= 3) {
           // Búsqueda por texto
-          const urlSearch = `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_TMDB_API_KEY}&query=${search}&language=es-MX&page=${page}`;
+          const urlSearch = `https://api.themoviedb.org/3/search/multi?api_key=${import.meta.env.VITE_TMDB_API_KEY}&query=${search}&language=es-MX&page=${page}`;
           const response = await fetch(urlSearch);
           if (!response.ok) throw new Error("Error al buscar");
-          const data = await response.json();
-          setMovie(data.results);
+          const data = (await response.json()) as TMDBResponse
+          const resultadosFiltrados = data.results.filter((item) => item.media_type !== 'person')
+          setMovie(resultadosFiltrados);
           setTotalPages(data.total_pages);
         } else if (search.length === 0) {
           // Carga inicial (Populares)
           const urlPopular = `https://api.themoviedb.org/3/movie/popular?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=es-MX&page=${page}`;
+          const urlTopRated = `https://api.themoviedb.org/3/movie/top_rated?api_key=${import.meta.env.VITE_TMDB_API_KEY}&language=es-MX&page=${page}`
           const response = await fetch(urlPopular);
+          const responseTopRated = await fetch(urlTopRated)
           if (!response.ok) throw new Error("Error al buscar");
+          if (!responseTopRated.ok) throw new Error("Error al buscar");
           const data = await response.json();
+          const dataTopRated = await responseTopRated.json();
           setMovie(data.results);
           setTotalPages(data.total_pages);
+          setTopRated(dataTopRated.results)
         }
       } catch (error) {
         console.error("Error al cargar la api", error);
@@ -114,129 +123,143 @@ function App() {
         setVerFavoritos={setVerFavoritos}
       />
 
-      {/* --- HERO (Solo se muestra en Inicio) --- */}
-      {!verFavoritos && movie.length > 0 && (
-        <Hero peliculas={movie.slice(0, 5)} onSelect={setSelectedMovie} />
-      )}
+      {/* Interruptor de rutas */}
+      <Routes>
 
-      <main className="min-h-screen w-full pb-8 bg-slate-900 text-white">
-
-        {/* --- CARRUSEL (Solo se muestra en Inicio) --- */}
-        {!verFavoritos && (
-          <div className="max-w-7xl mx-auto px-4 mt-8 relative group">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4">
-              Recomendaciones para ti
-            </h2>
-
-            {/* Botón Izquierdo */}
-            <button
-              onClick={scrollIzquierda}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-30 text-white w-10 h-20 rounded-r-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-7xl"
-            >
-              ‹
-            </button>
-
-            <div className="relative">
-              {/* Sombras laterales del carrusel */}
-              <div className="absolute top-0 right-0 w-16 h-full bg-linear-to-l from-slate-900 to-transparent z-20 pointer-events-none"></div>
-              <div className="absolute top-0 left-0 w-16 h-full bg-linear-to-r from-slate-900 to-transparent z-20 pointer-events-none"></div>
-
-              <div
-                ref={carruselRef}
-                className="flex gap-4 overflow-x-auto pb-8 pt-4 px-4 hide-scrollbar scroll-smooth snap-x relative"
-              >
-                {movie.map((peli) => (
-                  // Ancho fijo (150px en móvil, 200px en PC) y shrink-0 para que no se aplasten
-                  <div key={peli.id} className="w-[150px] md:w-[200px] shrink-0 snap-start">
-                    <MovieCard
-                      pelicula={peli}
-                      onSelect={setSelectedMovie}
-                      esFavorito={fav.some((f) => f.id === peli.id)}
-                      onToggleFav={() => toggleFav(peli)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Botón Derecho */}
-            <button
-              onClick={scrollDerecha}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-30 text-white w-10 h-20 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-7xl"
-            >
-              ›
-            </button>
-          </div>
-        )}
-
-        {/* --- GRID PRINCIPAL --- */}
-        <div className="max-w-7xl mx-auto px-4 mt-12">
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-6">
-            {verFavoritos ? "Mi lista" : "Explorar todo"}
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {/* Si estamos en favoritos, mapeamos 'fav', si no, mapeamos 'movie' */}
-            {verFavoritos
-              ? fav.map((peli) => (
-                <MovieCard
-                  key={peli.id}
-                  pelicula={peli}
-                  onSelect={setSelectedMovie}
-                  esFavorito={true}
-                  onToggleFav={() => toggleFav(peli)}
-                />
-              ))
-              : movie.map((peli) => (
-                <MovieCard
-                  key={peli.id}
-                  pelicula={peli}
-                  onSelect={setSelectedMovie}
-                  esFavorito={fav.some((f) => f.id === peli.id)}
-                  onToggleFav={() => toggleFav(peli)}
-                />
-              ))}
-
-            {/* Mensaje si la lista de favoritos está vacía */}
-            {verFavoritos && fav.length === 0 && (
-              <p className="col-span-full text-center text-gray-400 py-10 text-lg">
-                No tienes películas en tu lista todavía. ¡Empieza a darle al corazón! ❤️
-              </p>
+        <Route path="/" element={
+          <>
+            {/* --- HERO (Solo se muestra en Inicio) --- */}
+            {!verFavoritos && movie.length > 0 && (
+              <Hero peliculas={movie.slice(0, 5)} onSelect={setSelectedMovie} />
             )}
-          </div>
-        </div>
 
-        {/* --- PAGINACIÓN (Oculta en Favoritos) --- */}
-        {!verFavoritos && (
-          <div className="flex justify-center items-center gap-4 mt-8 text-white">
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-              className="bg-slate-800 px-4 py-2 rounded disabled:opacity-50 cursor-pointer"
-            >
-              Anterior
-            </button>
+            <main className="min-h-screen w-full bg-slate-950 pb-12 text-white">
+              {/* --- CARRUSEL (Solo se muestra en Inicio) --- */}
+              {!verFavoritos && (
+                <div className="group relative mx-auto mt-8 max-w-7xl px-4">
+                  <h2 className="mb-4 text-xl font-bold text-white md:text-2xl">
+                    Recomendaciones para ti
+                  </h2>
 
-            <span>Página {page} de {totalPages}</span>
+                  {/* Botón Izquierdo */}
+                  <button
+                    onClick={scrollIzquierda}
+                    type="button"
+                    aria-label="Desplazar películas a la izquierda"
+                    className="absolute left-0 top-1/2 z-30 flex h-20 w-10 -translate-y-1/2 items-center justify-center rounded-r-lg bg-slate-950/80 text-4xl text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  >
+                    ‹
+                  </button>
 
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
-              className="bg-slate-800 px-4 py-2 rounded disabled:opacity-50 cursor-pointer"
-            >
-              Siguiente
-            </button>
-          </div>
-        )}
+                  <div className="relative">
+                    {/* Sombras laterales del carrusel */}
+                    <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-12 bg-linear-to-l from-slate-950 to-transparent"></div>
+                    <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-12 bg-linear-to-r from-slate-950 to-transparent"></div>
 
-        {/* --- MODAL DE DETALLES --- */}
-        {selectedMovie && (
-          <MovieModal
-            pelicula={selectedMovie}
-            onClose={() => setSelectedMovie(null)}
-          />
-        )}
-      </main>
+                    <div
+                      ref={carruselRef}
+                      className="relative flex snap-x gap-4 overflow-x-auto px-4 pb-8 pt-4 hide-scrollbar scroll-smooth"
+                    >
+                      {topRated.map((peli) => (
+                        // Ancho fijo (150px en móvil, 200px en PC) y shrink-0 para que no se aplasten
+                        <div key={peli.id} className="w-36 shrink-0 snap-start md:w-48">
+                          <MovieCard
+                            pelicula={peli}
+                            onSelect={setSelectedMovie}
+                            esFavorito={fav.some((f) => f.id === peli.id)}
+                            onToggleFav={() => toggleFav(peli)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botón Derecho */}
+                  <button
+                    onClick={scrollDerecha}
+                    type="button"
+                    aria-label="Desplazar películas a la derecha"
+                    className="absolute right-0 top-1/2 z-30 flex h-20 w-10 -translate-y-1/2 items-center justify-center rounded-l-lg bg-slate-950/80 text-4xl text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
+
+              {/* --- GRID PRINCIPAL --- */}
+              <div className="mx-auto mt-12 max-w-7xl px-4">
+                <h2 className="mb-6 text-xl font-bold text-white md:text-2xl">
+                  {verFavoritos ? "Mi lista" : "Explorar todo"}
+                </h2>
+
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6 xl:grid-cols-5">
+                  {/* Si estamos en favoritos, mapeamos 'fav', si no, mapeamos 'movie' */}
+                  {verFavoritos
+                    ? fav.map((peli) => (
+                      <MovieCard
+                        key={peli.id}
+                        pelicula={peli}
+                        onSelect={setSelectedMovie}
+                        esFavorito={true}
+                        onToggleFav={() => toggleFav(peli)}
+                      />
+                    ))
+                    : movie.map((peli) => (
+                      <MovieCard
+                        key={peli.id}
+                        pelicula={peli}
+                        onSelect={setSelectedMovie}
+                        esFavorito={fav.some((f) => f.id === peli.id)}
+                        onToggleFav={() => toggleFav(peli)}
+                      />
+                    ))}
+
+                  {/* Mensaje si la lista de favoritos está vacía */}
+                  {verFavoritos && fav.length === 0 && (
+                    <p className="col-span-full rounded-lg border border-blue-900/40 bg-slate-900 p-10 text-center text-lg text-slate-400">
+                      No tienes películas en tu lista todavía. ¡Empieza a darle al corazón! ❤️
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* --- PAGINACIÓN (Oculta en Favoritos) --- */}
+              {!verFavoritos && (
+                <div className="mt-10 flex items-center justify-center gap-4 text-white">
+                  <button
+                    onClick={() => setPage(page - 1)}
+                    disabled={page === 1}
+                    className="cursor-pointer rounded-md border border-blue-800 bg-slate-900 px-4 py-2 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Anterior
+                  </button>
+
+                  <span>Página {page} de {totalPages}</span>
+
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={page === totalPages}
+                    className="cursor-pointer rounded-md border border-blue-800 bg-slate-900 px-4 py-2 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              )}
+
+              {/* --- MODAL DE DETALLES --- */}
+              {selectedMovie && (
+                <MovieModal
+                  pelicula={selectedMovie}
+                  onClose={() => setSelectedMovie(null)}
+                />
+              )}
+            </main>
+          </>
+        }
+        />
+        {/* Ruta 2 */}
+        <Route path="/:mediaType/:id" element={<MoviePage />} />
+      </Routes>
     </>
   );
 }

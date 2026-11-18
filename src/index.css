@@ -1,10 +1,11 @@
 @import 'tailwindcss';
 @plugin 'lightswind/plugin';
 body {
-    background-color: #0f172a;
+    background-color: #020617;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    color: #f8fafc;
 }
 
 /* Ocultar barra de scroll para Chrome, Safari y Opera */
@@ -19,4 +20,3 @@ body {
     scrollbar-width: none;
     /* Firefox */
 }
-

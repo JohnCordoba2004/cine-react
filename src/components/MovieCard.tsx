@@ -10,42 +10,40 @@ interface Props {
 
 function MovieCard({ pelicula, onSelect, esFavorito, onToggleFav }: Props) {
   const urlImg = pelicula.poster_path
-    ? `https://image.tmdb.org/t/p/w500`
-    : "https://dummyimage.com/600x400/000/5d67f0";
+    ? `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`
+    : "https://dummyimage.com/600x900/101b35/ffffff&text=Sin+poster";
   return (
     <div
       onClick={() => onSelect(pelicula)}
-      className="cursor-pointer bg-slate-800 rounded-xl overflow-hidden shadow-lg group hover:scale-105 hover:z-10 hover:outline-2 hover:outline-white transition-transform duration-300 ease-in-out relative"
+      className="relative cursor-pointer overflow-hidden rounded-lg border border-blue-900/40 bg-slate-900 shadow-lg transition-transform duration-300 hover:z-10 hover:scale-105"
     >
-      {/* Container img y btn */}
       <div className="relative">
-        {/* Image */}
         <img
-          src={urlImg + pelicula.poster_path}
-          alt={pelicula.original_title}
-          className="w-full object-cover aspect-2/3"
+          src={urlImg}
+          alt={pelicula.title || pelicula.name || 'Sin título'}
+          className="aspect-2/3 w-full object-cover"
         />
-        {/* Btn fav */}
-        <button onClick={(e) => { e.stopPropagation(); onToggleFav() }} className="absolute top-2 right-2 z-20 p-2 rounded-full bg-black/50 hover:bg-black/80 transition-colors backdrop-blur-sm">
+        <button
+          type="button"
+          aria-label={esFavorito ? "Quitar de Mi lista" : "Agregar a Mi lista"}
+          onClick={(e) => { e.stopPropagation(); onToggleFav() }}
+          className="absolute right-2 top-2 z-20 rounded-full bg-slate-950/80 p-2 transition-colors hover:bg-blue-600"
+        >
           <Heart
             size={20}
             className={esFavorito ? "fill-red-500 text-red-500" : "text-white"}
           />
         </button>
       </div>
-      {/* Container */}
-      <div className="p-4">
-        {/* Title */}
-        <h2 className="text-lg font-bold text-white line-clamp-1">
-          {pelicula.title}
+      <div className="p-3">
+        <h2 className="truncate text-base font-bold text-white">
+          {pelicula.title || pelicula.name}
         </h2>
-        <div className="flex justify-between items-center mt-2">
-          {/* Anio */}
+        <div className="mt-2 flex items-center justify-between">
           <span className="text-sm text-slate-400">
-            {pelicula.release_date.split("-")[0] ?? null}
+            {(pelicula.release_date || pelicula.first_air_date)?.split("-")[0] || "Año desconocido"}
           </span>
-          {/* Voto */}
-          <span className="text-sm text-yellow-400">
+          <span className="text-sm font-semibold text-blue-300">
             {pelicula.vote_average.toFixed(1)}
           </span>
         </div>
